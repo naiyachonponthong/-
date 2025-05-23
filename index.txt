@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบันทึกผลการเรียน</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <?!= include('css'); ?>
+</head>
+<body>
+   <!-- Loading Spinner -->
+  <div id="loading-spinner" class="loading-spinner">
+    <div class="loader-container">
+      <div class="pulse-container">
+        <div class="pulse-bubble pulse-bubble-1"></div>
+        <div class="pulse-bubble pulse-bubble-2"></div>
+        <div class="pulse-bubble pulse-bubble-3"></div>
+      </div>
+      <div class="loader-text">กำลังโหลด</div>
+    </div>
+  </div>
+
+  <!-- Login Container -->
+  <div id="login-container" class="login-container hidden">
+    <div class="login-card">
+      <div class="login-logo">
+        <i class="fas fa-school"></i>
+      </div>
+      <h1 class="login-title">ระบบบันทึกผลการเรียน</h1>
+      <div id="login-error" class="alert alert-danger hidden"></div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username" class="form-label">ชื่อผู้ใช้ / รหัสนักเรียน / เลขประจำตัวประชาชน</label>
+          <input type="text" id="username" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">รหัสผ่าน</label>
+          <input type="password" id="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+          <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+        </button>
+        <div style="text-align: center; margin-top: 15px;">
+          <a href="#" id="forgot-password-link" style="color: #3498db; text-decoration: none; font-size: 14px;">ลืมรหัสผ่าน?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div id="app-container" class="container hidden">
+    <!-- Side Menu -->
+    <div id="side-menu" class="side-menu">
+      <div class="logo-container">
+        <div class="school-logo">
+          <i class="fas fa-school"></i>
+        </div>
+        <h1>ระบบบันทึกผลการเรียน</h1>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="user-details">
+          <div id="user-name" class="user-name">ผู้ใช้งาน</div>
+          <div id="user-role" class="user-role">ตำแหน่ง</div>
+        </div>
+      </div>
+      <ul class="menu-items">
+        <!-- Admin Menu Items -->
+        <div id="admin-menu">
+          <li class="menu-item active" id="menu-dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>หน้าหลัก</span>
+          </li>
+          <li class="menu-item" id="menu-classes">
+            <i class="fas fa-school"></i>
+            <span>จัดการระดับชั้น</span>
+          </li>
+          <li class="menu-item" id="menu-subjects">
+            <i class="fas fa-book"></i>
+            <span>จัดการรายวิชา</span>
+          </li>
+          <li class="menu-item" id="menu-teachers">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>จัดการครูผู้สอน</span>
+          </li>
+          <li class="menu-item" id="menu-students">
+            <i class="fas fa-user-graduate"></i>
+            <span>จัดการนักเรียน</span>
+          </li>
+          <li class="menu-item" id="menu-assignments">
+            <i class="fas fa-tasks"></i>
+            <span>มอบหมายวิชา</span>
+          </li>
+          <li class="menu-item" id="menu-password-resets">
+            <i class="fas fa-key"></i>
+            <span>รีเซ็ตรหัสผ่าน</span>
+          </li>
+          <li class="menu-item" id="menu-settings">
+            <i class="fas fa-cog"></i>
+            <span>ตั้งค่าระบบ</span>
+          </li>
+        </div>
+        
+        <!-- Teacher Menu Items -->
+        <div id="teacher-menu" class="hidden">
+          <li class="menu-item active" id="menu-teacher-subjects">
+            <i class="fas fa-book"></i>
+            <span>รายวิชาที่สอน</span>
+          </li>
+          <li class="menu-item" id="menu-teacher-profile">
+            <i class="fas fa-user"></i>
+            <span>ข้อมูลส่วนตัว</span>
+          </li>
+        </div>
+        
+        <!-- Student Menu Items -->
+        <div id="student-menu" class="hidden">
+          <li class="menu-item active" id="menu-student-grades">
+            <i class="fas fa-chart-bar"></i>
+            <span>ผลการเรียน</span>
+          </li>
+          <li class="menu-item" id="menu-student-profile">
+            <i class="fas fa-user"></i>
+            <span>ข้อมูลส่วนตัว</span>
+          </li>
+        </div>
+        
+        <li class="menu-item" id="menu-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>ออกจากระบบ</span>
+        </li>
+      </ul>
+      <div class="toggle-menu" id="toggle-menu">
+        <i class="fas fa-angle-double-left"></i>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="main-content">
+      <!-- Admin Dashboard -->
+      <div id="admin-dashboard-content">
+        <div class="header">
+          <div class="page-title">หน้าหลัก</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="setup-system-btn">
+              <i class="fas fa-cogs"></i> ตั้งค่าระบบครั้งแรก
+            </button>
+          </div>
+        </div>
+        
+        <div class="dashboard-cards">
+          <div class="dashboard-card blue" id="dash-classes">
+            <i class="fas fa-school"></i>
+            <h3>จัดการระดับชั้น</h3>
+            <p>เพิ่ม/แก้ไข/ลบ ระดับชั้น</p>
+          </div>
+          <div class="dashboard-card green" id="dash-subjects">
+            <i class="fas fa-book"></i>
+            <h3>จัดการรายวิชา</h3>
+            <p>เพิ่ม/แก้ไข/ลบ รายวิชา</p>
+          </div>
+          <div class="dashboard-card purple" id="dash-teachers">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <h3>จัดการครูผู้สอน</h3>
+            <p>เพิ่ม/แก้ไข/ลบ ครูผู้สอน</p>
+          </div>
+          <div class="dashboard-card yellow" id="dash-students">
+            <i class="fas fa-user-graduate"></i>
+            <h3>จัดการนักเรียน</h3>
+            <p>เพิ่ม/แก้ไข/ลบ นักเรียน</p>
+          </div>
+          <div class="dashboard-card red" id="dash-assignments">
+            <i class="fas fa-tasks"></i>
+            <h3>มอบหมายวิชา</h3>
+            <p>มอบหมายวิชาให้ครูผู้สอน</p>
+          </div>
+          <div class="dashboard-card orange" id="dash-password-resets">
+            <i class="fas fa-key"></i>
+            <h3>รีเซ็ตรหัสผ่าน</h3>
+            <p>จัดการคำขอรีเซ็ตรหัสผ่าน</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Section -->
+      <div id="settings-content" class="hidden">
+        <div class="header">
+          <div class="page-title">ตั้งค่าระบบ</div>
+        </div>
+        
+        <div class="card">
+          <h2 class="card-title">ข้อมูลทั่วไป</h2>
+          <form id="settings-form">
+            <div class="form-group">
+              <label for="school-name-input" class="form-label">ชื่อโรงเรียน</label>
+              <input type="text" id="school-name-input" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="school-description-input" class="form-label">คำอธิบาย</label>
+              <input type="text" id="school-description-input" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="admin-email-input" class="form-label">อีเมลผู้ดูแลระบบ</label>
+              <input type="email" id="admin-email-input" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="semester-input" class="form-label">ภาคเรียน</label>
+              <input type="text" id="semester-input" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="pass-score-input" class="form-label">คะแนนผ่านขั้นต่ำ</label>
+              <input type="number" id="pass-score-input" class="form-control" min="0" max="100" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> บันทึกการตั้งค่า
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Classes Section -->
+      <div id="classes-content" class="hidden">
+        <div class="header">
+          <div class="page-title">จัดการระดับชั้น</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="add-class-btn">
+              <i class="fas fa-plus"></i> เพิ่มระดับชั้น
+            </button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ชื่อระดับชั้น</th>
+                  <th>จำนวนนักเรียน</th>
+                  <th>วันที่สร้าง</th>
+                  <th>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="classes-table-body">
+                <!-- Data will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subjects Section -->
+      <div id="subjects-content" class="hidden">
+        <div class="header">
+          <div class="page-title">จัดการรายวิชา</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="add-subject-btn">
+              <i class="fas fa-plus"></i> เพิ่มรายวิชา
+            </button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>รหัสวิชา</th>
+                  <th>ชื่อวิชา</th>
+                  <th>ประเภท</th>
+                  <th>หน่วยกิต</th>
+                  <th>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="subjects-table-body">
+                <!-- Data will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+  <!-- Teachers Section -->
+<div id="teachers-content" class="hidden">
+  <div class="header">
+    <div class="page-title">จัดการครูผู้สอน</div>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="add-teacher-btn">
+        <i class="fas fa-plus"></i> เพิ่มครูผู้สอน
+      </button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <!-- เพิ่มส่วนค้นหา -->
+    <div style="display: grid; grid-template-columns: 1fr 200px; gap: 15px; margin-bottom: 20px;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="search-teacher" class="form-label">ค้นหาครูผู้สอน:</label>
+        <div style="position: relative;">
+          <input type="text" id="search-teacher" class="form-control" placeholder="ค้นหาด้วย ชื่อผู้ใช้, ชื่อ-นามสกุล, อีเมล, เบอร์โทร">
+          <i class="fas fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #ccc;"></i>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">&nbsp;</label>
+        <button id="clear-teacher-search" class="btn btn-secondary" style="width: 100%; display: none;">
+          <i class="fas fa-times"></i> ล้างการค้นหา
+        </button>
+      </div>
+    </div>
+    
+    <!-- แสดงผลการค้นหา -->
+    <div id="teacher-search-results-info" class="hidden" style="margin-bottom: 15px; padding: 10px; background-color: #e8f4fd; border-radius: 4px; border-left: 4px solid #3498db;">
+      <span id="teacher-search-results-text"></span>
+      <button id="clear-teacher-search-btn" class="btn btn-sm btn-secondary" style="margin-left: 10px;">
+        <i class="fas fa-times"></i> ล้างการค้นหา
+      </button>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px;">รูปโปรไฟล์</th>
+            <th>ชื่อผู้ใช้</th>
+            <th>ชื่อ-นามสกุล</th>
+            <th>อีเมล</th>
+            <th>เบอร์โทรศัพท์</th>
+            <th>วันที่สร้าง</th>
+            <th style="width: 200px;">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="teachers-table-body">
+          <!-- Data will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+      
+    <!-- Students Section (เพิ่มการค้นหา) -->
+<div id="students-content" class="hidden">
+  <div class="header">
+    <div class="page-title">จัดการนักเรียน</div>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="add-student-btn">
+        <i class="fas fa-plus"></i> เพิ่มนักเรียน
+      </button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <!-- เพิ่มส่วนค้นหาและกรอง -->
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 15px; margin-bottom: 20px;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="search-student" class="form-label">ค้นหานักเรียน:</label>
+        <div style="position: relative;">
+          <input type="text" id="search-student" class="form-control" placeholder="ค้นหาด้วย รหัสนักเรียน, ชื่อ-นามสกุล, เลขประจำตัวประชาชน, เบอร์โทร">
+          <i class="fas fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #ccc;"></i>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="filter-class" class="form-label">กรองตามระดับชั้น:</label>
+        <select id="filter-class" class="form-control">
+          <option value="">ทั้งหมด</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+    
+    <!-- แสดงผลการค้นหา -->
+    <div id="search-results-info" class="hidden" style="margin-bottom: 15px; padding: 10px; background-color: #e8f4fd; border-radius: 4px; border-left: 4px solid #3498db;">
+      <span id="search-results-text"></span>
+      <button id="clear-search" class="btn btn-sm btn-secondary" style="margin-left: 10px;">
+        <i class="fas fa-times"></i> ล้างการค้นหา
+      </button>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px;">รหัสนักเรียน</th>
+            <th style="width: 250px;">ชื่อ-นามสกุล</th>
+            <th style="width: 150px;">เลขประจำตัวประชาชน</th>
+            <th style="width: 120px;">ระดับชั้น</th>
+            <th style="width: 150px;">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="students-table-body">
+          <!-- Data will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+      
+    <!-- Assignments Section -->
+<div id="assignments-content" class="hidden">
+  <div class="header">
+    <div class="page-title">มอบหมายวิชา</div>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="add-assignment-btn">
+        <i class="fas fa-plus"></i> มอบหมายวิชา
+      </button>
+      <button class="btn btn-success" id="refresh-assignments-btn">
+        <i class="fas fa-sync-alt"></i> รีเฟรช
+      </button>
+    </div>
+  </div>
+  
+  <!-- สถิติการมอบหมาย -->
+  <div class="dashboard-cards" style="margin-bottom: 20px;">
+    <div class="dashboard-card blue">
+      <i class="fas fa-chalkboard-teacher"></i>
+      <h3 id="total-teachers-count">0</h3>
+      <p>ครูผู้สอนทั้งหมด</p>
+    </div>
+    <div class="dashboard-card green">
+      <i class="fas fa-tasks"></i>
+      <h3 id="total-assignments-count">0</h3>
+      <p>การมอบหมายทั้งหมด</p>
+    </div>
+    <div class="dashboard-card orange">
+      <i class="fas fa-user-check"></i>
+      <h3 id="assigned-teachers-count">0</h3>
+      <p>ครูที่ได้รับมอบหมาย</p>
+    </div>
+    <div class="dashboard-card red">
+      <i class="fas fa-user-times"></i>
+      <h3 id="unassigned-teachers-count">0</h3>
+      <p>ครูที่ยังไม่ได้มอบหมาย</p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <!-- ตัวกรองและค้นหา -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; margin-bottom: 20px;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="filter-assignment-teacher" class="form-label">กรองตามครูผู้สอน:</label>
+        <select id="filter-assignment-teacher" class="form-control">
+          <option value="">ทั้งหมด</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="filter-assignment-class" class="form-label">กรองตามระดับชั้น:</label>
+        <select id="filter-assignment-class" class="form-control">
+          <option value="">ทั้งหมด</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="filter-assignment-subject" class="form-label">กรองตามรายวิชา:</label>
+        <select id="filter-assignment-subject" class="form-control">
+          <option value="">ทั้งหมด</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">&nbsp;</label>
+        <button id="clear-assignment-filters" class="btn btn-secondary">
+          <i class="fas fa-times"></i> ล้าง
+        </button>
+      </div>
+    </div>
+    
+    <!-- แสดงผลการกรอง -->
+    <div id="assignment-filter-results-info" class="hidden" style="margin-bottom: 15px; padding: 10px; background-color: #e8f4fd; border-radius: 4px; border-left: 4px solid #3498db;">
+      <span id="assignment-filter-results-text"></span>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px;">ครูผู้สอน</th>
+            <th style="width: 150px;">ระดับชั้น</th>
+            <th style="width: 250px;">รายวิชา</th>
+            <th style="width: 100px;">ประเภทวิชา</th>
+            <th style="width: 150px;">วันที่มอบหมาย</th>
+            <th style="width: 150px;">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="assignments-table-body">
+          <!-- Data will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+      
+      <!-- Password Resets Section -->
+      <div id="password-resets-content" class="hidden">
+        <div class="header">
+          <div class="page-title">คำขอรีเซ็ตรหัสผ่าน</div>
+        </div>
+        
+        <div class="card">
+          <div id="password-resets-empty" class="hidden" style="text-align: center; padding: 20px; color: #7f8c8d;">
+            ไม่มีคำขอรีเซ็ตรหัสผ่าน
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ชื่อผู้ใช้</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>วันที่ขอ</th>
+                  <th>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="password-resets-table-body">
+                <!-- Data will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Teacher Subject List -->
+      <div id="teacher-subjects-content" class="hidden">
+        <div class="header">
+          <div class="page-title">รายวิชาที่รับผิดชอบ</div>
+        </div>
+        
+        <div id="teacher-subjects" class="dashboard-cards">
+          <!-- Subject cards will be populated by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Teacher Subject Detail -->
+      <div id="teacher-subject-detail" class="hidden">
+        <div class="header">
+          <div class="page-title" id="subject-detail-title"></div>
+          <div class="header-actions">
+            <button class="btn btn-success" id="set-criteria-btn">
+              <i class="fas fa-cog"></i> ตั้งค่าเกณฑ์
+            </button>
+            <button class="btn btn-primary" id="export-grades-btn">
+              <i class="fas fa-file-export"></i> ส่งออก CSV
+            </button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card mb-4" style="border-left: 4px solid #2ecc71; background-color: #e8f8f5;">
+            <h3 class="card-title">เกณฑ์การตัดเกรด</h3>
+            <div id="criteria-details">
+              <!-- Criteria details will be populated by JavaScript -->
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>รหัสนักเรียน</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>คะแนน</th>
+                  <th>เกรด</th>
+                  <th>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="student-grades-table-body">
+                <!-- Data will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Student Grade Report -->
+      <div id="student-grades-content" class="hidden">
+        <div class="header">
+          <div class="page-title">ผลการเรียน</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="export-student-grades-btn">
+              <i class="fas fa-file-export"></i> ส่งออก CSV
+            </button>
+          </div>
+        </div>
+        
+        <div class="profile-section">
+          <div class="card">
+            <div class="profile-image">
+              <div class="avatar" id="student-profile-image">
+                <img id="profile-image" src="" alt="Profile">
+              </div>
+              <h3 id="student-name">ชื่อนักเรียน</h3>
+              <p id="student-id">รหัสนักเรียน</p>
+              <label for="profile-upload" class="btn btn-primary" style="margin-top: 10px;">
+                <i class="fas fa-camera"></i> อัปโหลดรูปโปรไฟล์
+              </label>
+              <input type="file" id="profile-upload" class="hidden" accept="image/*">
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card mb-4" style="border-left: 4px solid #3498db; background-color: #eaf2f8;">
+              <div style="padding: 10px;">
+                <h3 style="font-weight: bold;">GPA: <span id="student-gpa">0.00</span></h3>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>รหัสวิชา</th>
+                    <th>ชื่อวิชา</th>
+                    <th>ประเภท</th>
+                    <th>หน่วยกิต</th>
+                    <th>คะแนน</th>
+                    <th>ผลการเรียน</th>
+                  </tr>
+                </thead>
+                <tbody id="student-grades-list">
+                  <!-- Data will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Student Profile -->
+      <div id="student-profile-content" class="hidden">
+        <div class="header">
+          <div class="page-title">ข้อมูลส่วนตัว</div>
+        </div>
+        
+        <div class="card">
+          <div class="profile-section">
+            <div class="profile-image">
+              <div class="avatar">
+                <img id="profile-image-detail" src="" alt="Profile">
+              </div>
+              <label for="profile-upload-detail" class="btn btn-primary" style="margin-top: 10px;">
+                <i class="fas fa-camera"></i> อัปโหลดรูปโปรไฟล์
+              </label>
+              <input type="file" id="profile-upload-detail" class="hidden" accept="image/*">
+            </div>
+            
+            <div>
+              <div class="form-group">
+                <label class="form-label">รหัสนักเรียน</label>
+                <input type="text" id="profile-student-id" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">ชื่อ-นามสกุล</label>
+                <input type="text" id="profile-name" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">เลขประจำตัวประชาชน</label>
+                <input type="text" id="profile-id-card" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">ระดับชั้น</label>
+                <input type="text" id="profile-class" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Teacher Profile -->
+      <div id="teacher-profile-content" class="hidden">
+        <div class="header">
+          <div class="page-title">ข้อมูลส่วนตัว</div>
+        </div>
+        
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">ชื่อผู้ใช้</label>
+            <input type="text" id="teacher-profile-username" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ-นามสกุล</label>
+            <input type="text" id="teacher-profile-name" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">อีเมล</label>
+            <input type="email" id="teacher-profile-email" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">วันที่เข้าสู่ระบบล่าสุด</label>
+            <input type="text" id="teacher-profile-last-login" class="form-control" readonly>
+          </div>
+          <button class="btn btn-warning" id="change-password-btn">
+            <i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modals -->
+  <!-- Add/Edit Class Modal -->
+  <div id="class-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="class-modal-title" class="modal-title">เพิ่มระดับชั้น</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="class-form">
+          <input type="hidden" id="class-id">
+          <div class="form-group">
+            <label for="class-name" class="form-label">ชื่อระดับชั้น</label>
+            <input type="text" id="class-name" class="form-control" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-class-btn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add/Edit Subject Modal -->
+  <div id="subject-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="subject-modal-title" class="modal-title">เพิ่มรายวิชา</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="subject-form">
+          <input type="hidden" id="subject-id">
+          <div class="form-group">
+            <label for="subject-code" class="form-label">รหัสวิชา</label>
+            <input type="text" id="subject-code" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="subject-name" class="form-label">ชื่อวิชา</label>
+            <input type="text" id="subject-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="subject-type" class="form-label">ประเภท</label>
+            <select id="subject-type" class="form-control" required>
+              <option value="">-- เลือกประเภท --</option>
+              <option value="พื้นฐาน">พื้นฐาน</option>
+              <option value="เพิ่มเติม">เพิ่มเติม</option>
+              <option value="เลือกเสรี">เลือกเสรี</option>
+              <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subject-credit" class="form-label">หน่วยกิต</label>
+            <input type="number" id="subject-credit" min="0" step="0.5" class="form-control" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-subject-btn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  
+ <!-- Add/Edit Teacher Modal -->
+<div id="teacher-modal-overlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="teacher-modal-title" class="modal-title">เพิ่มครูผู้สอน</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="teacher-form">
+        <input type="hidden" id="teacher-id">
+        
+        <!-- รูปโปรไฟล์เดิม (แสดงเฉพาะตอนแก้ไข) -->
+        <div id="teacher-current-image" class="form-group" style="display: none;">
+          <label class="form-label">รูปโปรไฟล์ปัจจุบัน</label>
+          <div style="text-align: center; margin-bottom: 15px;">
+            <img id="teacher-current-img" src="" alt="รูปโปรไฟล์ปัจจุบัน" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 2px solid #ddd;">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="teacher-username" class="form-label">ชื่อผู้ใช้</label>
+          <input type="text" id="teacher-username" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="teacher-name" class="form-label">ชื่อ-นามสกุล</label>
+          <input type="text" id="teacher-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="teacher-email" class="form-label">อีเมล</label>
+          <input type="email" id="teacher-email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="teacher-phone" class="form-label">เบอร์โทรศัพท์</label>
+          <input type="tel" id="teacher-phone" class="form-control" placeholder="08XXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label for="teacher-password" class="form-label">รหัสผ่าน</label>
+          <input type="password" id="teacher-password" class="form-control" placeholder="ปล่อยว่างเพื่อใช้รหัสผ่านแบบสุ่ม (เฉพาะการเพิ่มใหม่)">
+          <small class="text-muted">สำหรับการแก้ไข: ปล่อยว่างหากไม่ต้องการเปลี่ยนรหัสผ่าน</small>
+        </div>
+        <div class="form-group">
+          <label for="teacher-profile-image" class="form-label">รูปโปรไฟล์ใหม่</label>
+          <input type="file" id="teacher-profile-image" class="form-control" accept="image/*">
+          <small class="text-muted">รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB)</small>
+          <div id="teacher-image-preview" style="margin-top: 10px; display: none; text-align: center;">
+            <label style="font-size: 14px; color: #666;">ตัวอย่างรูปใหม่:</label>
+            <div>
+              <img id="teacher-preview-img" src="" alt="ตัวอย่างรูป" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #007bff; margin-top: 5px;">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary modal-close">ยกเลิก</button>
+      <button class="btn btn-primary" id="save-teacher-btn">บันทึก</button>
+    </div>
+  </div>
+</div>
+  
+  <!-- Add/Edit Student Modal -->
+  <div id="student-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="student-modal-title" class="modal-title">เพิ่มนักเรียน</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="student-form">
+          <input type="hidden" id="student-id">
+          <div class="form-group">
+            <label for="student-id-number" class="form-label">รหัสนักเรียน</label>
+            <input type="text" id="student-id-number" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="student-idcard" class="form-label">เลขประจำตัวประชาชน</label>
+            <input type="text" id="student-idcard" class="form-control">
+          </div>
+          <div class="form-group">
+  <label for="student-name" class="form-label">ชื่อ-นามสกุล</label>
+  <input type="text" id="student-name" class="form-control" required>
+</div>
+          <div class="form-group">
+            <label for="student-class" class="form-label">ระดับชั้น</label>
+            <select id="student-class" class="form-control" required>
+              <option value="">-- เลือกระดับชั้น --</option>
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-student-btn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add/Edit Assignment Modal -->
+<div id="assignment-modal-overlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="assignment-modal-title" class="modal-title">มอบหมายวิชา</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="assignment-form">
+        <input type="hidden" id="assignment-id">
+        <div class="form-group">
+          <label for="assignment-teacher" class="form-label">ครูผู้สอน</label>
+          <select id="assignment-teacher" class="form-control" required>
+            <option value="">-- เลือกครูผู้สอน --</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+        
+        <!-- เปลี่ยนระดับชั้นเป็น checkbox list -->
+        <div class="form-group">
+          <label class="form-label">ระดับชั้น <span style="color: #e74c3c;">*</span></label>
+          <div id="classes-selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+            <!-- Class checkboxes will be populated by JavaScript -->
+          </div>
+          <small class="text-muted">เลือกได้มากกว่า 1 ระดับชั้น (คลิกเพื่อเลือก/ยกเลิก)</small>
+          <div id="selected-classes-info" style="margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px; display: none;">
+            <strong>ระดับชั้นที่เลือก:</strong>
+            <div id="selected-classes-list" style="margin-top: 5px;"></div>
+          </div>
+        </div>
+        
+        <!-- รายวิชา checkbox list -->
+        <div class="form-group">
+          <label class="form-label">รายวิชา <span style="color: #e74c3c;">*</span></label>
+          <div id="subjects-selection" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+            <!-- Subject checkboxes will be populated by JavaScript -->
+          </div>
+          <small class="text-muted">เลือกได้มากกว่า 1 วิชา (คลิกเพื่อเลือก/ยกเลิก)</small>
+          <div id="selected-subjects-info" style="margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px; display: none;">
+            <strong>วิชาที่เลือก:</strong>
+            <div id="selected-subjects-list" style="margin-top: 5px;"></div>
+          </div>
+        </div>
+        
+        <!-- แสดงสรุปการมอบหมาย -->
+        <div id="assignment-summary" style="margin-top: 15px; padding: 15px; background-color: #e8f5e8; border-radius: 4px; border-left: 4px solid #28a745; display: none;">
+          <strong>สรุปการมอบหมาย:</strong>
+          <div id="assignment-summary-text" style="margin-top: 8px; font-size: 0.9em;"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary modal-close">ยกเลิก</button>
+      <button class="btn btn-primary" id="save-assignment-btn">บันทึก</button>
+    </div>
+  </div>
+</div>
+  
+<!-- Grading Criteria Modal -->
+<div id="criteria-modal-overlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">ตั้งค่าเกณฑ์การตัดเกรด</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="activity-criteria" class="hidden">
+        <p>สำหรับกิจกรรมพัฒนาผู้เรียน จะใช้เกณฑ์ ผ่าน (คะแนน >= 50) และ ไม่ผ่าน (คะแนน < 50)</p>
+      </div>
+      
+      <form id="criteria-form">
+        <div id="grade-criteria">
+          <!-- แสดงข้อมูลรายวิชา -->
+          <div id="subject-info" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+            <h5 style="margin: 0; color: #007bff;">ข้อมูลรายวิชา</h5>
+            <div id="subject-details" style="margin-top: 8px; font-size: 0.9em; color: #666;"></div>
+          </div>
+          
+          <!-- เกณฑ์การตัดเกรด -->
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 15px;">
+            <div style="font-weight: bold; text-align: center;">เกรด</div>
+            <div style="font-weight: bold;">คำอธิบาย</div>
+            <div style="font-weight: bold; text-align: center;">คะแนนขั้นต่ำ</div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #28a745;">4</div>
+            <div>คะแนนดีเยี่ยม</div>
+            <input type="number" id="criteria-4" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #20c997;">3.5</div>
+            <div>คะแนนดีมาก</div>
+            <input type="number" id="criteria-35" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #17a2b8;">3</div>
+            <div>คะแนนดี</div>
+            <input type="number" id="criteria-3" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #6f42c1;">2.5</div>
+            <div>คะแนนค่อนข้างดี</div>
+            <input type="number" id="criteria-25" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #fd7e14;">2</div>
+            <div>คะแนนปานกลาง</div>
+            <input type="number" id="criteria-2" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #ffc107;">1.5</div>
+            <div>คะแนนพอใช้</div>
+            <input type="number" id="criteria-15" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center; font-weight: bold; color: #dc3545;">1</div>
+            <div>คะแนนอ่อน</div>
+            <input type="number" id="criteria-1" min="0" max="100" class="form-control" required style="text-align: center;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 15px;">
+            <div style="text-align: center; font-weight: bold; color: #6c757d;">0</div>
+            <div>คะแนนตก</div>
+            <div style="text-align: center; color: #6c757d; font-style: italic;">ต่ำกว่าเกณฑ์ 1</div>
+          </div>
+          
+          <!-- คำแนะนำ -->
+          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 10px; margin-top: 15px;">
+            <small style="color: #856404;">
+              <i class="fas fa-info-circle"></i> 
+              <strong>คำแนะนำ:</strong> กำหนดคะแนนขั้นต่ำสำหรับแต่ละเกรด เกณฑ์ต้องเรียงลำดับจากมากไปน้อย
+            </small>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary modal-close">ยกเลิก</button>
+      <button class="btn btn-primary" id="save-criteria-btn">บันทึกเกณฑ์</button>
+    </div>
+  </div>
+</div>
+  
+  <!-- Save Grade Modal -->
+  <div id="grade-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="save-grade-title" class="modal-title">บันทึกคะแนน</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="save-grade-form">
+          <input type="hidden" id="grade-student-id">
+          <div class="form-group">
+            <label for="grade-score" class="form-label">คะแนน (0-100)</label>
+            <input type="number" id="grade-score" min="0" max="100" class="form-control" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-grade-btn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">ลืมรหัสผ่าน</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 20px;">กรุณากรอกชื่อผู้ใช้ของคุณ เมื่อส่งคำขอแล้ว ผู้ดูแลระบบจะดำเนินการรีเซ็ตรหัสผ่านให้คุณ</p>
+        <form id="forgot-password-form">
+          <div class="form-group">
+            <label for="forgot-username" class="form-label">ชื่อผู้ใช้</label>
+            <input type="text" id="forgot-username" class="form-control" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="forgot-password-btn">ส่งคำขอ</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Reset Password Modal -->
+  <div id="reset-password-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">รีเซ็ตรหัสผ่าน</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="reset-password-info">
+          <p style="margin-bottom: 20px;">คุณกำลังจะรีเซ็ตรหัสผ่านให้กับ <span id="reset-user-name" class="font-weight-bold"></span></p>
+          <input type="hidden" id="reset-user-id">
+        </div>
+        
+        <div id="reset-password-result" class="hidden">
+          <p style="margin-bottom: 20px;">รหัสผ่านใหม่ของ <span id="reset-user-name-result" class="font-weight-bold"></span> คือ:</p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+            <p id="new-password" style="font-family: monospace; font-size: 18px; font-weight: bold;"></p>
+          </div>
+          <p style="margin-bottom: 20px; font-size: 14px;">กรุณาแจ้งรหัสผ่านใหม่นี้ให้ผู้ใช้ทราบ</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div id="reset-password-confirm-buttons">
+          <button class="btn btn-secondary modal-close">ยกเลิก</button>
+          <button class="btn btn-danger" id="confirm-reset-password">รีเซ็ตรหัสผ่าน</button>
+        </div>
+        <div id="reset-password-close-button" class="hidden">
+          <button class="btn btn-primary modal-close">ปิด</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+ <!-- Change Password Modal -->
+  <div id="change-password-modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">เปลี่ยนรหัสผ่าน</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="change-password-form">
+          <div class="form-group">
+            <label for="current-password" class="form-label">รหัสผ่านปัจจุบัน</label>
+            <input type="password" id="current-password" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="new-password-input" class="form-label">รหัสผ่านใหม่</label>
+            <input type="password" id="new-password-input" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="confirm-password" class="form-label">ยืนยันรหัสผ่านใหม่</label>
+            <input type="password" id="confirm-password" class="form-control" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-password-btn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Assignment Modal -->
+<div id="assignment-modal-overlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="assignment-modal-title" class="modal-title">มอบหมายวิชา</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="assignment-form">
+        <input type="hidden" id="assignment-id">
+        <div class="form-group">
+          <label for="assignment-teacher" class="form-label">ครูผู้สอน</label>
+          <select id="assignment-teacher" class="form-control" required>
+            <option value="">-- เลือกครูผู้สอน --</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assignment-class" class="form-label">ระดับชั้น</label>
+          <select id="assignment-class" class="form-control" required>
+            <option value="">-- เลือกระดับชั้น --</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assignment-subject" class="form-label">รายวิชา</label>
+          <select id="assignment-subject" class="form-control" required>
+            <option value="">-- เลือกรายวิชา --</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary modal-close">ยกเลิก</button>
+      <button class="btn btn-primary" id="save-assignment-btn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+  <?!= include('javascript'); ?>
+</body>
+</html>
